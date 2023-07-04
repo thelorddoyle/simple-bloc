@@ -89,3 +89,7 @@ I implement two buttons: Load JSON 1 and Load JSON 2.
 If we already have the JSON X state (FetchResult) in cache, just use the cached data and don't make the request.
 
 You can view all implemented logic in `main.dart`.
+
+## Main Quest: Part 2
+
+Made the code mockable and testable, and split main.dart up.
