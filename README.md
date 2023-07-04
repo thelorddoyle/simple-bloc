@@ -1,4 +1,4 @@
-# cubit
+# flutter_bloc
 
 Simple project where I create a `flutter_bloc` and learn how it is implemented.
 
