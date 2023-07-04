@@ -29,7 +29,7 @@ void main() {
     setUp(() => {bloc = PersonsBloc()});
 
     blocTest<PersonsBloc, FetchResult?>('Test initial state',
-        build: () => bloc, verify: (bloc) => bloc.state == null);
+        build: () => bloc, verify: (bloc) => expect(bloc.state, null));
 
     blocTest<PersonsBloc, FetchResult?>(
       'Mock retrieving person from first iterable',
