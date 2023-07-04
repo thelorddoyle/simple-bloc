@@ -1,136 +1,91 @@
 # cubit
 
-Simple project where I create a flutter homepage snippet (code below), create a NameCubit and implement in my HomePage.
+Simple project where I create a `flutter_bloc` and learn how it is implemented.
 
-## To create a Flutter homepage snippet:
+## Side Quests
 
-1. Create a new flutter project using `flutter create "name_of_your_project"` and open your project
-2. In VSCode use `Command + Shift + P` and then choose `Snippets: Configure User Snippets`
-3. Choose a name, I chose `flutter` but if you already have a snippets file - why are you reading this? :D
-4. Past the following code:
+I played around with the `extension` keyword:
 
 ```js
-{
-	"Homepage Flutter Snippet": {
-		"scope": "dart",
-		"body": [
-"import 'package:flutter/material.dart';",
-"",
-"void main() {",
-"  runApp(const MyApp());",
-"}",
-"",
-"class MyApp extends StatelessWidget {",
-"  const MyApp({super.key});",
-"",
-"  @override",
-"  Widget build(BuildContext context) {",
-"    return MaterialApp(",
-"      title: 'Flutter Demo',",
-"      theme: ThemeData(",
-"        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),",
-"        useMaterial3: true,",
-"      ),",
-"      home: const MyHomePage(),",
-"    );",
-"  }",
-"}",
-"",
-"class MyHomePage extends StatelessWidget {",
-"  const MyHomePage({super.key});",
-"",
-"  @override",
-"  Widget build(BuildContext context) {",
-"    return Scaffold(",
-"      appBar: AppBar(title: const Text('Homepage')),",
-"    );",
-"  }",
-"}",
-
-		],
-		"prefix": "fluthome"
-	}
-}
-```
-
-5. Go to your `main.dart`
-
-## To build a basic cubit
-
-### What is a cubit?
-
-It is the native abstract clas behind the Bloc library. A Cubit is similar to Bloc but has no notion of events and relies on methods to emit new states. Every Cubit requires an initial state which will be the state of the Cubit before emit has been called. The current state of a Cubit can be accessed via the state getter.
-
-I felt like it was important to understand Cubits before I moved on to Bloc and Provider for Flutter.
-
-1. I built a basic iterable of names and an extension on the Iterable class that allows me to get a random name:
-
-```js
-const names = ['Foo', 'Bar', 'Baz'];
-
-extension RandomElement<T> on Iterable<T> {
-  T getRandomElement() => elementAt(math.Random().nextInt(length));
-}
-```
-
-2. Create my cubit! I extend the cubit and let it know that the State will be a nullable String. I then initialise my Cubit with a null value. I then give it a `pickRandomName` method that emits (which is a must for state in cubits) the state: in this case a new String name.
-
-```js
-class NamesCubit extends Cubit<String?> {
-  NamesCubit() : super(null);
-
-  void pickRandomName() => emit(names.getRandomElement());
-}
-```
-
-3. Make my HomePage stateful so that I can hold and emit state within it (you can move your cursor over the function itself and in VSCode use the `Command + .` to allow Flutters extension to convert it to a stateful widget for you! Once I have made this conversion I update my homepage to initialise
-
-```js
-class _MyHomePageState extends State<MyHomePage> {
-  late final NamesCubit cubit;
-
-  @override
-  void initState() {
-    super.initState();
-    cubit = NamesCubit();
-  }
-
-  @override
-  void dispose() {
-    cubit.close();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Homepage')),
-      body: StreamBuilder<String?>(
-          stream: cubit.stream,
-          builder: (context, snapshot) {
-            final button = TextButton(
-              onPressed: () => cubit.pickRandomName(),
-              child: const Text('Pick A Random Name'),
-            );
-            switch (snapshot.connectionState) {
-              case ConnectionState.none:
-                return button;
-              case ConnectionState.waiting:
-                return button;
-              case ConnectionState.active:
-                return Column(
-                  children: [Text(snapshot.data ?? ''), button],
-                );
-              case ConnectionState.done:
-                return const SizedBox();
-            }
-          }),
-    );
+// Can extend on any keyword
+extension LengthExtension on String {
+  int getLength() {
+    return length;
   }
 }
 
+// Here it is in action. I will use it now for creating an enum (PersonUrl) and then giving it a method via na extension
+void fun() {
+  String myString = 'Hello, there!';
+  int length = myString.getLength();
+  print(length);
+}
 ```
 
-## Example Cubit 
+I updated the `Subscript` in Iterables (as it does not work like a List):
 
-![image](assets/images/name.png)
+```js
+// What are subscripts?
+
+// In Flutter, a subscript refers to the ability to access individual elements
+// or properties of a collection or object using square brackets [].
+// It is a way to retrieve or set values at a specific index or key within a data structure.
+extension Subscript<T> on Iterable<T> {
+  T? operator [](int index) => length > index ? elementAt(index) : null;
+}
+
+// We are extending the Iterable subscript to actually be able to operate
+// similarly to a list, and access an item at index, but also changing
+// the Type to be T? so that it can return null of the int provided
+// has no value at that index
+
+void testIt() {
+  Iterable<String> names = ['foo', 'bar', 'baz'];
+  var thisName = names[2];
+  print(thisName);
+}
+```
+
+I dug in to why Bloc Events are `abstract` classes:
+
+```js
+@immutable
+abstract class LoadAction {
+  const LoadAction();
+}
+
+// Because a Bloc looks like this: Bloc<Event, State>
+// It takes a single Event generic type (in this case our Load Action)
+// Abstract classes can hold different types of LoadActions inside of them but still only be one type
+// But also! And importantly! Abstract classes CANNOT be initialised
+// This helps us so that we cannot initialise a LoadAction class such as LoadAction.LoadImage and just send that to our bloc
+```
+
+## Main Quest
+
+Implement a basic Bloc that takes in a `LoadAction` event and emits a State of `FetchResult`.
+
+I use Live Server (VSCode extension) and reference the local url of two person data JSON files e.g.
+
+```js
+[
+  {
+    name: "Foo 1",
+    age: 20,
+  },
+  {
+    name: "Bar 1",
+    age: 30,
+  },
+  {
+    name: "Bax 1",
+    age: 40,
+  },
+];
+```
+
+I implement two buttons: Load JSON 1 and Load JSON 2.
+
+If we already have the JSON X state (FetchResult) in cache, just use the cached data and don't make the request.
+
+You can view all implemented logic in `main.dart`.
