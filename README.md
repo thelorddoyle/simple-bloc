@@ -93,3 +93,7 @@ You can view all implemented logic in `main.dart`.
 ## Main Quest: Part 2
 
 Made the code mockable and testable, and split main.dart up.
+
+## Main Quest: Part 3
+
+Add working tests
